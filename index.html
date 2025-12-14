@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #011a3b;
+    }
+
+    .container {
+        position: relative;
+        width: 25vw;
+        height: 25vw;
+        max-width: 300px;
+        max-height: 300px;
+        border: 2px solid #0e3181;
+        border-radius: 10px;
+    }
+
+    .dot {
+        position: absolute;
+        width: 2vh;
+        height: 2vh;
+        background: #57bef8;
+        border-radius: 50%;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+    }
+</style>/
+    </head>
+<body>
+
+
+
+<div class="container">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+</div>
+
+<script>
+    const dots = document.querySelectorAll('.dot');
+    const container = document.querySelector('.container');
+
+    let angle = 0;
+    const speed = 0.009;
+
+    function circles() {
+        const radius = container.clientWidth / 3;
+
+        dots.forEach((dot, index) => {
+            const position = index * (Math.PI * 2 / dots.length);
+            const x = Math.cos(angle + position) * radius;
+            const y = Math.sin(angle + position) * radius;
+
+            dot.style.transform = `
+      translate(-50%, -50%)
+      translate(${x}px, ${y}px)
+    `;
+        });
+
+        angle += speed;
+        requestAnimationFrame(circles);
+    }
+
+    circles();
+
+</script>
+</body>
+
+
+</html>
