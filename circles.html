@@ -41,6 +41,9 @@
             cursor: pointer;
             z-index: 1;
 
+        }
+
+        .wrapper.breathing {
             animation: pulse 3s infinite ease-in-out;
         }
 
@@ -172,16 +175,51 @@
 </div>
 
 <script>
-    const contentMap = [
-        { message:'Время остановиться и выдохнуть', cards:['a','b','c'] },
-        { message:'Красота начинается с покоя', cards:['a','b','c'] },
-        { message:'Ритуал для тела и души', cards:['a','b','c'] },
-        { message:'Мягкое восстановление изнутри', cards:['a','b','c'] },
-        { message:'Баланс, к которому хочется вернуться', cards:['a','b','c'] },
-        { message:'Пространство медленного ухода', cards:['a','b','c']},
-        { message:'Тонкое внимание к себе', cards:['a','b','c'] },
-        { message:'Момент тишины и заботы', cards:['a','b','c'] }
-    ];
+    const settings = {
+
+        isBreathing: true,
+        rotationSpeed: 0.13, // скорость вращения
+        fadeStart: 2.2, // длина анимации вращения перед затуханием
+        fadeIntensity: 0.015, // насколько быстро лого будет исчезать
+        speedWhileFading: 0.96, // насколько сильно замедлится вращение когда объект начнет исчезать
+
+        contentMap: [
+            {
+                message: 'Время остановиться и выдохнуть',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Красота начинается с покоя',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Ритуал для тела и души',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Мягкое восстановление изнутри',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Баланс, к которому хочется вернуться',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Пространство медленного ухода',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Тонкое внимание к себе',
+                cards: ['a', 'b', 'c']
+            },
+            {
+                message: 'Момент тишины и заботы',
+                cards: ['a', 'b', 'c']
+            }
+        ]
+
+
+    };
 
     const trigger = document.getElementById('trigger');
     const symbol = document.getElementById('symbol');
@@ -189,16 +227,20 @@
     const cards = document.querySelectorAll('.card');
 
     let angle = 0;
-    let speed = 0.13;
+    let speed = settings.rotationSpeed;
     let fading = false;
     let locked = false;
+
+    if (settings.isBreathing) {
+        trigger.classList.add('breathing');
+    }
 
     function rotate() {
         angle += speed;
         symbol.style.transform = `rotate(${angle}deg)`;
         if (fading) {
-            speed *= 0.96;
-            symbol.style.opacity -= 0.015;
+            speed *= settings.speedWhileFading;
+            symbol.style.opacity -= settings.fadeIntensity;
         }
         if (speed > 0.001) requestAnimationFrame(rotate);
     }
@@ -210,14 +252,14 @@
 
         setTimeout(() => {
             fading = true;
-            const data = contentMap[Math.floor(Math.random() * contentMap.length)];
+            const data = settings.contentMap[Math.floor(Math.random() * settings.contentMap.length)];
             message.textContent = data.message;
             message.classList.add('visible');
 
             cards.forEach(card => {
                 card.classList.toggle('visible', data.cards.includes(card.dataset.card));
             });
-        }, 2200);
+        }, settings.fadeStart * 1000);
     });
 </script>
 
