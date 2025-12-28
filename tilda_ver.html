@@ -12,7 +12,7 @@
 
         body {
             margin: 0;
-            min-height: 100svh;
+            min-height: 70svh;
             background: #fafafa;
             font-family: 'Cormorant Garamond', serif;
         }
@@ -21,7 +21,6 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100svh;
         }
 
         .symbol-zone {
@@ -35,12 +34,26 @@
         }
 
         .wrapper {
-            width: min(60vw, 30rem);
+            width: 676px;
             aspect-ratio: 1;
             position: relative;
             cursor: pointer;
             z-index: 1;
 
+        }
+
+        .overlay-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            font-size: 17px;
+            font-weight: 400;
+            color: #49302A;
+            line-height: 1.1;
+            pointer-events: none;
+            transition: opacity 1s var(--func);
         }
 
         .wrapper.breathing {
@@ -87,7 +100,7 @@
             pointer-events: none;
             height: 0 !important;
             overflow: hidden !important;
-            transform: translateY(-9rem);
+            transform: translateY(2rem);
             transition:
                     opacity 1.6s var(--func),
                     transform 1.6s var(--func),
@@ -99,7 +112,27 @@
             visibility: visible !important;
             pointer-events: auto;
             height: auto !important;
-            transform: translateY(-10rem);
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1200px) {
+            .wrapper { width: 550px; }
+            .overlay-text { font-size: 15px; }
+        }
+
+        @media (max-width: 960px) {
+            .wrapper { width: 410px; }
+            .overlay-text { font-size: 11px; }
+        }
+
+        @media (max-width: 640px) {
+            .wrapper { width: 342px; }
+            .overlay-text { font-size: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .wrapper { width: 320px; }
+            .overlay-text { font-size: 10px; }
         }
 
     </style>
@@ -127,13 +160,12 @@
                     </g>
                 </g>
             </svg>
+            <div class="overlay-text">НАЖМИТЕ,ЧТОБЫ<br>СТАТЬ ЧАСТЬЮ<br>ИСТОРИИ</div>
         </div>
         <div class="message-container">
             <div class="message" id="message"></div>
         </div>
     </div>
-
-
 </div>
 
 <script>
@@ -153,23 +185,23 @@
         contentMap: [
             {
                 message: 'Время остановиться и выдохнуть',
-                block: 'uc-tilda-content-ld1'
+                block: ['uc-tilda-content-ld1', 'uc-tilda-content-m1']
             },
             {
                 message: 'Красота начинается с покоя',
-                block: 'uc-tilda-content-ld2'
+                block: ['uc-tilda-content-ld2', 'uc-tilda-content-m1']
             },
             {
                 message: 'Ритуал для тела и души',
-                block: 'uc-tilda-content-ld3'
+                block: ['uc-tilda-content-ld3', 'uc-tilda-content-m1']
             },
             {
                 message: 'Мягкое восстановление изнутри',
-                block: 'uc-tilda-content-ld4'
+                block: ['uc-tilda-content-ld3', 'uc-tilda-content-m1']
             },
             {
                 message: 'Баланс, к которому хочется вернуться',
-                block: 'uc-tilda-content-ld5'
+                block: ['uc-tilda-content-ld2', 'uc-tilda-content-m1']
             }
         ]
 
@@ -179,6 +211,7 @@
     const symbol = document.getElementById('symbol');
     const message = document.getElementById('message');
     const tildaBlocks = document.querySelectorAll('[class*="uc-tilda-content"]'); // сделано под тильду
+    const overlayText = document.querySelector('.overlay-text');
 
 
     let angle = 0;
@@ -233,6 +266,7 @@
     }
 
     function showContent() {
+        const introBlock = document.querySelector('.uc-tilda-content-ser');
         const data = settings.contentMap[Math.floor(Math.random() * settings.contentMap.length)];
         message.textContent = data.message;
         message.classList.add('visible');
@@ -242,11 +276,14 @@
             block.classList.remove('visible');
         });
 
-        // показываем нужный
-        const activeBlock = document.querySelector(`.${data.block}`);
-        if (activeBlock) {
-            activeBlock.classList.add('visible');
+        if (introBlock) {
+            introBlock.classList.add('visible');
         }
+        // показываем нужный
+        data.block.forEach(className => {
+            const block = document.querySelector(`.${className}`);
+            if (block) block.classList.add('visible');
+        });
 
 
     }
@@ -254,6 +291,9 @@
     trigger.addEventListener('click', () => {
         if (locked) return;
         locked = true;
+
+        overlayText.style.opacity = 0;
+        overlayText.style.transition = 'opacity 0.3s'; //текст убирается при клике
 
         setTimeout(() => requestAnimationFrame(symbolRotate), settings.rotationStart * 1000);
         setTimeout(() => requestAnimationFrame(symbolFadeOut), settings.circleFadeOutStart * 1000);
