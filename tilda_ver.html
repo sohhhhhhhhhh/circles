@@ -12,19 +12,37 @@
 
         body {
             margin: 0;
-            min-height: 70svh;
+            min-height: 60svh;
             background: #fafafa;
             font-family: 'Cormorant Garamond', serif;
         }
 
         .stage {
             display: flex;
+            position: relative;
             flex-direction: column;
             align-items: center;
         }
 
+        .prediction-border {
+            position: absolute;
+            top: 15vmin;
+            left: 5vmin;
+            right: 5vmin;
+            bottom: 7vmin;
+            border: 0.3vmin dashed #ccc;
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 1s ease;
+        }
+
+        .prediction-border.visible {
+            opacity: 1;
+        }
+
         .symbol-zone {
-            padding-top: 15svh;
+            padding-top: 10svh;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -34,12 +52,11 @@
         }
 
         .wrapper {
-            width: 676px;
+            width: calc(676px * 0.85);
             aspect-ratio: 1;
             position: relative;
             cursor: pointer;
             z-index: 1;
-
         }
 
         .overlay-text {
@@ -48,12 +65,11 @@
             left: 50%;
             transform: translate(-50%, -50%);
             text-align: center;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 400;
             color: #49302A;
             line-height: 1.1;
             pointer-events: none;
-            transition: opacity 1s var(--func);
         }
 
         .wrapper.breathing {
@@ -70,11 +86,10 @@
             width: 100%;
             height: 100%;
             transform-origin: 50% 50%;
-            transition: opacity 1.8s var(--func);
         }
 
         .message-container {
-            width: 90%;
+            width: 100%;
             max-width: 30rem;
             margin: 1rem auto;
             text-align: center;
@@ -86,8 +101,9 @@
 
         .message {
             opacity: 0;
-            transition: opacity 2s var(--func);
-            font-size: clamp(1.5rem, 3vw, 2rem);
+            font-size: 46px;
+            color: #CC984E;
+            font-weight: 600;
         }
 
         .message.visible {
@@ -95,45 +111,46 @@
         }
 
         [class*="uc-tilda-content"] {
-            opacity: 0 !important;
-            visibility: hidden !important;
+            opacity: 0;
+            visibility: hidden;
             pointer-events: none;
-            height: 0 !important;
-            overflow: hidden !important;
-            transform: translateY(2rem);
-            transition:
-                    opacity 1.6s var(--func),
-                    transform 1.6s var(--func),
-                    height 1.6s var(--func);
-        }
-
-        [class*="uc-tilda-content"].visible {
-            opacity: 1 !important;
-            visibility: visible !important;
-            pointer-events: auto;
-            height: auto !important;
-            transform: translateY(0);
+            height: 0;
+            overflow: hidden;
         }
 
         @media (max-width: 1200px) {
-            .wrapper { width: 550px; }
-            .overlay-text { font-size: 15px; }
+            .wrapper { width: calc(550px * 0.8) }
+            .symbol-zone {padding-top: 8svh}
+            .overlay-text { font-size: 14px}
+            .message { font-size: 42px}
         }
 
         @media (max-width: 960px) {
-            .wrapper { width: 410px; }
-            .overlay-text { font-size: 11px; }
+
+            .wrapper { width: calc(410px * 0.85) }
+            .overlay-text { font-size: 10px}
+            .symbol-zone {padding-top: 5svh}
+            .message { font-size: 38px}
+            [class*="uc-tilda-content"].visible,
+            [class*="uc-tilda-content"]:not([style*="pointer-events: none"]) {pointer-events: auto !important;}
         }
 
         @media (max-width: 640px) {
-            .wrapper { width: 342px; }
-            .overlay-text { font-size: 10px; }
+            .wrapper { width: calc(342px * 0.85) }
+            .overlay-text { font-size: 9px }
+            .message { font-size: 34px}
+            .symbol-zone {padding-top: 5svh}
         }
 
         @media (max-width: 480px) {
-            .wrapper { width: 320px; }
-            .overlay-text { font-size: 10px; }
+            .wrapper { width: width: auto }
+            .overlay-text { font-size: 9px }
+            .message { font-size: 30px}
+            .symbol-zone {padding-top: 3svh; width: 100%; }
         }
+
+
+
 
     </style>
 </head>
@@ -166,42 +183,32 @@
             <div class="message" id="message"></div>
         </div>
     </div>
+    <div class="prediction-border"></div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script>
     const settings = {
         isBreathing: true,
 
         rotationStart: 0,
-        rotationSpeed: 0.18, // скорость вращения в сек. undefined => 1 цикл
-        rotationDuration: 4, // Время вращения, в секундах.
-        rotationSpeedWhileFading: 0.96, // насколько сильно замедлится вращение когда объект начнет исчезать
-        circleFadeOutStart: 1,
+        rotationDuration: 5.3, // Время вращения, в секундах.
+        circleFadeOutStart: 5.1,
         circleFadeOutDuration: 0.6,
-
-        textfadeInStart: 1, // длина анимации вращения перед затуханием
-
+        textFadeInStart: 5.3, // длина анимации вращения перед затуханием
 
         contentMap: [
             {
-                message: 'Время остановиться и выдохнуть',
-                block: ['uc-tilda-content-ld1', 'uc-tilda-content-m1']
+                message: '«Время остановиться и выдохнуть»',
+                blocks: ['uc-tilda-content-ld1', 'uc-tilda-content-m1']
             },
             {
-                message: 'Красота начинается с покоя',
-                block: ['uc-tilda-content-ld2', 'uc-tilda-content-m1']
+                message: '«Красота начинается с покоя»',
+                blocks: ['uc-tilda-content-ld2', 'uc-tilda-content-m1']
             },
             {
-                message: 'Ритуал для тела и души',
-                block: ['uc-tilda-content-ld3', 'uc-tilda-content-m1']
-            },
-            {
-                message: 'Мягкое восстановление изнутри',
-                block: ['uc-tilda-content-ld3', 'uc-tilda-content-m1']
-            },
-            {
-                message: 'Баланс, к которому хочется вернуться',
-                block: ['uc-tilda-content-ld2', 'uc-tilda-content-m1']
+                message: '«Ритуал для тела и души»',
+                blocks: ['uc-tilda-content-ld3', 'uc-tilda-content-m1']
             }
         ]
 
@@ -210,96 +217,81 @@
     const trigger = document.getElementById('trigger');
     const symbol = document.getElementById('symbol');
     const message = document.getElementById('message');
-    const tildaBlocks = document.querySelectorAll('[class*="uc-tilda-content"]'); // сделано под тильду
     const overlayText = document.querySelector('.overlay-text');
+    const tildaBlocks = gsap.utils.toArray('[class*="uc-tilda-content"]');
 
-
-    let angle = 0;
-    let rotationSpeed = 2 * Math.PI * settings.rotationSpeed ||
-        2 * Math.PI / (settings.rotationDuration);
-    let fading = false;
     let locked = false;
 
     if (settings.isBreathing) {
         trigger.classList.add('breathing');
     }
 
-    let rotateInit = undefined;
-    let t_1 = undefined;
-    let t_2 = undefined;
-
-    function symbolRotate() {
-        if (rotateInit === undefined) {
-            rotateInit = Date.now();
-            t_1 = Date.now();
-        }
-        t_2 = Date.now(); // вот тут ниже заменила для простоты
-        if (t_2 - rotateInit > settings.rotationDuration * 1000) return;
-
-        angle += rotationSpeed * (t_2 - t_1) / 1000;
-        symbol.style.transform = `rotate(${angle}rad)`;
-        symbol.style.transition = `transform ${(t_2 - t_1)/1000}s ease-in-out`;
-        t_1 = t_2;
-
-        if (fading) {
-            rotationSpeed *= settings.rotationSpeedWhileFading;
-        }
-        requestAnimationFrame(symbolRotate);
-    }
-
-    let symbolFadeoutInit, st_1, st_2;
-    function symbolFadeOut() {
-        if (symbolFadeoutInit === undefined) {
-            symbolFadeoutInit = Date.now();
-            st_1 = Date.now();
-            fading = true;
-        }
-        st_2 = Date.now();
-//отсюда изменения идут
-        const elapsed = (st_2 - symbolFadeoutInit) / 1000;
-        const progress = elapsed / settings.circleFadeOutDuration;
-        symbol.style.opacity = 1 - Math.min(progress, 1);
-        st_1 = st_2;
-        if (progress < 1) {
-            requestAnimationFrame(symbolFadeOut);
-        }
-    }
-
-    function showContent() {
-        const introBlock = document.querySelector('.uc-tilda-content-ser');
-        const data = settings.contentMap[Math.floor(Math.random() * settings.contentMap.length)];
-        message.textContent = data.message;
-        message.classList.add('visible');
-
-        // скрываем все блоки (сделано под тильду)
-        tildaBlocks.forEach(block => {
-            block.classList.remove('visible');
-        });
-
-        if (introBlock) {
-            introBlock.classList.add('visible');
-        }
-        // показываем нужный
-        data.block.forEach(className => {
-            const block = document.querySelector(`.${className}`);
-            if (block) block.classList.add('visible');
-        });
+    gsap.set(symbol, { transformOrigin: "50% 50%", rotation: 0 });
+    gsap.set(tildaBlocks, {opacity: 0, y: 26, height: 0, visibility: "hidden"});
+    gsap.set(message, {opacity: 0});
 
 
-    }
+    const timeline = gsap.timeline({ paused: true});
+
+    timeline
+        .to(overlayText, {opacity: 0, duration: 0.3}, 0)
+
+        .to(symbol, {rotation: "+=360", duration: settings.rotationDuration, ease: "power1.inOut"})
+
+        .to(symbol, {opacity: 0, duration: settings.circleFadeOutDuration, ease: "power1.inOut"}, settings.circleFadeOutStart)
+
+        .to(message, {opacity: 1, duration: 3, ease: "power1.inOut",
+
+            onStart() {
+                const data = settings.contentMap[Math.floor(Math.random() * settings.contentMap.length)];
+                message.textContent = data.message;
+                timeline.data = data;
+                document.querySelector('.prediction-border').classList.add('visible');
+            }
+        }, settings.textFadeInStart)
+
+        .add(() => {
+            setTimeout(() => {
+                const introBlock = document.querySelector('.uc-tilda-content-ser');
+                if (introBlock) {
+                    gsap.to(introBlock, {
+                        opacity: 1,
+                        y: 0,
+                        height: "auto",
+                        visibility: "visible",
+                        pointerEvents: "auto",
+                        duration: 1.6,
+                        ease: "power1.out"
+                    });
+                }
+
+                const blocksToShow = timeline.data.blocks
+                    .map(cls => document.querySelector(`.${cls}`))
+                    .filter(el => el);
+
+                if (blocksToShow.length) {
+                    gsap.to(blocksToShow, {
+                        opacity: 1,
+                        y: 0,
+                        height: "auto",
+                        visibility: "visible",
+                        duration: 2,
+                        delay: 0.6,
+                        ease: "sine.in"
+                    });
+                }
+            }, 1000); // таймаут для рендера
+        }, settings.textFadeInStart);
+
+
 
     trigger.addEventListener('click', () => {
         if (locked) return;
         locked = true;
 
-        overlayText.style.opacity = 0;
-        overlayText.style.transition = 'opacity 0.3s'; //текст убирается при клике
-
-        setTimeout(() => requestAnimationFrame(symbolRotate), settings.rotationStart * 1000);
-        setTimeout(() => requestAnimationFrame(symbolFadeOut), settings.circleFadeOutStart * 1000);
-        setTimeout(showContent, settings.textfadeInStart * 1000);
+        trigger.classList.remove('breathing');
+        timeline.play();
     });
 </script>
 
 </body>
-</html>
